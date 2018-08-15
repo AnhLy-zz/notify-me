@@ -1,0 +1,33 @@
+.image-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-outline-danger {
+  border-radius: 1.25rem !important;
+}
+
+.form-control {
+  border-radius: 1.25rem !important; 
+}
+
+#scrollToTop:hover {
+  background-color: #ff5274;
+  opacity: 0.5;
+} 
+
+#scrollToTop {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: #ff5274;
+  color: white;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50px;
+}
