@@ -77,7 +77,7 @@ export class AppComponent implements OnInit {
       }
     })
 
-    this.sendEmail();
+   // this.sendEmail();
   }
 
   sendEmail() {
