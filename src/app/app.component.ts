@@ -61,10 +61,12 @@ export class AppComponent implements OnInit {
     _.forEach(this.newData, (newSignal: any) => {
       const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
       if (matchedSignal) {
-        if (newSignal.signal !== matchedSignal.signal && (newSignal.currency === 'btcusdt' || newSignal.currency === 'ethbtc')) {
+        if (newSignal.signal !== matchedSignal.signal) {
           console.log('Old signal: ', matchedSignal);
           console.log('New signal: ', newSignal);
+            if (newSignal.currency === 'btcusdt' || newSignal.currency === 'ethbtc') {
           this.emailContent.push(`Old signal: ${JSON.stringify(matchedSignal)}. New signal: ${JSON.stringify(newSignal)}`);
+            }
             _.remove(this.sourceData, function(item) {
               return item.currency === newSignal.currency ;
             });
