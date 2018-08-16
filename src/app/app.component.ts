@@ -13,9 +13,9 @@ const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  sourceData: object[] = []
-  newData: object[]
-  emailContent: string[]
+  sourceData = []
+  newData = []
+  emailContent = []
 
   constructor(private http: HttpClient) {
     console.log('nick always here');
@@ -43,8 +43,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  arrangData(data: any): Array<object> {
-    const arrangedData: object[] = [];
+  arrangData(data: any) {
+    const arrangedData = [];
     _.forEach(data.buy, (item: any) => { arrangedData.push(item) });
     _.forEach(data.sell, (item: any) => { arrangedData.push(item) });
     return arrangedData;
