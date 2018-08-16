@@ -63,11 +63,12 @@ export class AppComponent implements OnInit {
         if (newSignal.signal !== signal) {
           console.log('Old signal: ', matchedSignal);
           console.log('New signal: ', newSignal);
-          this.emailContent.push(`Old signal: ${matchedSignal}. New signal: ${newSignal}`);
+          this.emailContent.push(`Old signal: ${JSON.stringify(matchedSignal)}. New signal: ${JSON.stringify(newSignal)}`);
         }
       } else {
         this.sourceData.push(newSignal);
         console.log('New signal initial: ', newSignal);
+        this.emailContent.push('New signal initial: ', JSON.stringify(newSignal));
       }
     })
 
