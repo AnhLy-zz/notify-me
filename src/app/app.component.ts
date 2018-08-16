@@ -13,8 +13,8 @@ const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  sourceData: string[] = []
-  newData: string[]
+  sourceData: object[] = []
+  newData: object[]
   emailContent: string[]
 
   constructor(private http: HttpClient) {
@@ -59,8 +59,7 @@ export class AppComponent implements OnInit {
     _.forEach(this.newData, (newSignal: any) => {
       const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
       if (matchedSignal) {
-        const signal = _.result(matchedSignal, 'signal');
-        if (newSignal.signal !== signal) {
+        if (newSignal.signal !== matchedSignal.signal) {
           console.log('Old signal: ', matchedSignal);
           console.log('New signal: ', newSignal);
           this.emailContent.push(`Old signal: ${JSON.stringify(matchedSignal)}. New signal: ${JSON.stringify(newSignal)}`);
