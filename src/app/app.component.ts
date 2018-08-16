@@ -13,10 +13,7 @@ const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  sourceData = [ 
-      {"time":1534386317903,"price":6205,"signal":"buy","currency":"btcusdt"},
-      {"time":1534386317903,"price":0.0444,"signal":"buy","currency":"ethbtc"},
-  ]
+  sourceData: string[] = []
   newData: string[]
   emailContent: string[]
 
