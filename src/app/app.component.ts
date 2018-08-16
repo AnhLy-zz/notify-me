@@ -13,7 +13,10 @@ const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  sourceData: string[]
+  sourceData: string[] = [ 
+      {"time":1534386317903,"price":6205,"signal":"buy","currency":"btcusdt"},
+      {"time":1534386317903,"price":0.0444,"signal":"buy","currency":"ethbtc"},
+  ]
   newData: string[]
   emailContent: string[]
 
@@ -64,6 +67,10 @@ export class AppComponent implements OnInit {
           console.log('Old signal: ', matchedSignal);
           console.log('New signal: ', newSignal);
           this.emailContent.push(`Old signal: ${JSON.stringify(matchedSignal)}. New signal: ${JSON.stringify(newSignal)}`);
+            _.remove(this.sourceData, function(item) {
+              return item.currency === newSignal.currency ;
+            });
+            this.sourceData.push(newSignal);
         }
       } else {
         this.sourceData.push(newSignal);
