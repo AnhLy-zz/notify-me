@@ -43,8 +43,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  arrangData(data: any): Array<string> {
-    const arrangedData: string[] = [];
+  arrangData(data: any): Array<object> {
+    const arrangedData: object[] = [];
     _.forEach(data.buy, (item: any) => { arrangedData.push(item) });
     _.forEach(data.sell, (item: any) => { arrangedData.push(item) });
     return arrangedData;
