@@ -1,14 +1,98 @@
 import { Component, OnInit } from '@angular/core';
+import { interval } from 'rxjs/observable/interval';
+import { HttpClient } from '@angular/common/http';
+import * as _ from 'lodash';
+import * as $ from 'jquery';
+
+const API_SIGNAL = `https://signal3.exacoin.co/ai_all_signal?time=15m`;
+const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss']
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-    constructor() {
-    }
+  sourceData: string[]
+  newData: string[]
+  emailContent: string[]
 
-    ngOnInit() {
+  constructor(private http: HttpClient) {
+    console.log('nick always here');
+  }
+
+  ngOnInit() {
+    this.emailContent = [];
+    const numbers = interval(1000 * 5);
+    numbers.subscribe(() => this.getData());
+  }
+
+  getData() {
+    if (_.isEmpty(this.sourceData)) {
+      //call api to get data from api
+      this.http.get(API_SIGNAL)
+        .subscribe((res: any) => {
+          this.sourceData = this.arrangData(res)
+        })
+    } else {
+      this.http.get(API_SIGNAL)
+        .subscribe((res: any) => {
+          this.newData = this.arrangData(res)
+        })
+      this.compareData();
     }
+  }
+
+  arrangData(data: any): Array<string> {
+    const arrangedData: string[] = [];
+    _.forEach(data.buy, (item: any) => { arrangedData.push(item) });
+    _.forEach(data.sell, (item: any) => { arrangedData.push(item) });
+    return arrangedData;
+  }
+
+  compareData() {
+    //compare new signal with source data
+    //if existed
+    //  then compare is new or old?
+    //    if new then push in source data
+    //    else old then compare with the exist value
+    _.forEach(this.newData, (newSignal: any) => {
+      const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
+      if (matchedSignal) {
+        const signal = _.result(matchedSignal, 'signal');
+        if (newSignal.signal !== signal) {
+          console.log('Old signal: ', matchedSignal);
+          console.log('New signal: ', newSignal);
+          this.emailContent.push(`Old signal: ${matchedSignal}. New signal: ${newSignal}`);
+        }
+      } else {
+        this.sourceData.push(newSignal);
+        console.log('New signal initial: ', newSignal);
+      }
+    })
+
+    this.sendEmail();
+  }
+
+  sendEmail() {
+    const data = {
+      service_id: 'gmail',
+      template_id: 'template_RLzpQCde',
+      user_id: 'user_RZxp7PcNtvPxnBMph4LaY',
+      template_params: {
+        'email_content': JSON.stringify(this.emailContent),
+      }
+    };
+    if (!_.isEmpty(this.emailContent)) {
+      $.ajax(API_EMAil, {
+        type: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json'
+      }).done(function () {
+        console.log('Your mail is sent!');
+      }).fail(function (error) {
+        console.log('Oops... ' + JSON.stringify(error));
+      });
+    }
+  }
 }
