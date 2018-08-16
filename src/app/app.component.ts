@@ -98,6 +98,7 @@ export class AppComponent implements OnInit {
         contentType: 'application/json'
       }).done(function () {
         console.log('Your mail is sent!');
+        this.emailContent = [];
       }).fail(function (error) {
         console.log('Oops... ' + JSON.stringify(error));
       });
