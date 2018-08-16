@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.emailContent = [];
-    const numbers = interval(1000 * 5);
+    const numbers = interval(1000 * 60 * 2);
     numbers.subscribe(() => this.getData());
   }
 
@@ -68,7 +68,7 @@ export class AppComponent implements OnInit {
       } else {
         this.sourceData.push(newSignal);
         console.log('New signal initial: ', newSignal);
-        this.emailContent.push('New signal initial: ', JSON.stringify(newSignal));
+        //this.emailContent.push('New signal initial: ', JSON.stringify(newSignal));
       }
     })
 
