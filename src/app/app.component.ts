@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     //    if new then push in source data
     //    else old then compare with the exist value
     _.forEach(this.newData, (newSignal: any) => {
-      const matchedSignal;
+      let matchedSignal;
       this.db.collection('currencies').doc(newSignal.currency).get()
           .then(function(doc) {
             if (doc.exists) {
