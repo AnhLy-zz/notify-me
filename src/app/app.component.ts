@@ -31,8 +31,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    const numbers = interval(1000 * 5 * 60);
-    numbers.subscribe(() => this.getData());
+    this.getData()
   }
 
   getData() {
