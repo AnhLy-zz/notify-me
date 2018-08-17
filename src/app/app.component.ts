@@ -40,7 +40,8 @@ export class AppComponent implements OnInit {
         this.newData = this.arrangData(res)
       })
     this.compareData();
-
+    this.emailContent = 'this is for testing';
+    this.sendEmail();
   }
 
   arrangData(data: any) {
