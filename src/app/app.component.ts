@@ -31,7 +31,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.getData()
+    const numbers = interval(1000 * 5 * 60);
+    numbers.subscribe(() => this.getData());
   }
 
   getData() {
@@ -40,8 +41,6 @@ export class AppComponent implements OnInit {
         this.newData = this.arrangData(res)
       })
     this.compareData();
-    this.emailContent.push('this is for testing');
-    this.sendEmail();
   }
 
   arrangData(data: any) {
