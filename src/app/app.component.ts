@@ -19,11 +19,7 @@ export class AppComponent implements OnInit {
   emailContent = []
 
   constructor(private http: HttpClient, private db: AngularFirestore) {
-    console.log('>>> Currency goes here');
-
-    //get data currencies
-    db.collection('currencies').valueChanges()
-      .subscribe(res => this.sourceData = res)
+    console.log('>>> Currency goes here >>>');
   }
 
   ngOnInit() {
@@ -53,35 +49,33 @@ export class AppComponent implements OnInit {
     //  then compare is new or old?
     //    if new then push in source data
     //    else old then compare with the exist value
+    
     _.forEach(this.newData, (newSignal: any) => {
       let matchedSignal;
-      this.db.collection('currencies').doc(newSignal.currency).ref.get()
-          .then(function(doc) {
-            if (doc.exists) {
-              matchedSignal = doc.data();
+      const docRef = this.db.collection("currencies").doc(newSignal.currency);
+
+      docRef.ref.get().then(function (doc) {
+        if (doc.exists) {
+          matchedSignal = doc.data();
+          if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
+            console.log('Old: ', matchedSignal);
+            console.log('New: ', newSignal);
+  
+            if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc'].includes(newSignal.currency)) {
+              this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
+              console.log(' >>> Important ',_.toUpper(newSignal.currency),' <<<');
             }
-          });
-        
-        
-            
-      if (matchedSignal) {
-        if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
-          console.log('Old: ', matchedSignal, ' >>> New: ', newSignal);
-
-          if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc'].includes(newSignal.currency)) {
-            this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
+            console.log('-------------------------------------------------');
+  
+            //update data
+            docRef.set(newSignal, { merge: true });
           }
-
-          //remove old data and add new data
-          this.db.collection('currencies').doc(matchedSignal.currency)
-            .set(matchedSignal, { merge: true });
         }
-      } else {
+      }).catch(function (error) {
         //add new data to db
         this.db.collection("currencies").doc(newSignal.currency).set(newSignal);
         console.log('Signal initial: ', newSignal);
-      }
-
+      });
     })
 
     this.sendEmail();
