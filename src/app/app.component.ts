@@ -61,7 +61,7 @@ export class AppComponent implements OnInit {
             console.log('Old: ', matchedSignal);
             console.log('New: ', newSignal);
   
-            if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc'].includes(newSignal.currency)) {
+            if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc', 'bnbbtc', 'eosbtc', 'wtcbtc'].includes(newSignal.currency)) {
               this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
               console.log(' >>> Important ',_.toUpper(newSignal.currency),' <<<');
             }
