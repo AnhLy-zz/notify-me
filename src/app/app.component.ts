@@ -8,10 +8,6 @@ import { AngularFirestore } from 'angularfire2/firestore';
 const API_SIGNAL = `https://signal3.exacoin.co/ai_all_signal?time=5m`;
 const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
 
-class Currency {
-  constructor(public title) { }
-}
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -41,6 +37,7 @@ export class AppComponent implements OnInit {
         this.newData = this.arrangData(res)
       })
     this.compareData();
+
   }
 
   arrangData(data: any) {
@@ -57,33 +54,29 @@ export class AppComponent implements OnInit {
     //    if new then push in source data
     //    else old then compare with the exist value
     _.forEach(this.newData, (newSignal: any) => {
-      const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
+      const matchedSignal;
+      this.db.collection('currencies').doc(newSignal.currency).get()
+          .then(function(doc) {
+            if (doc.exists) {
+              matchedSignal = doc.data();
+            }
+          });
+            
       if (matchedSignal) {
         if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
-          console.log('Old >>> : ', matchedSignal);
-          console.log('New >>> : ', newSignal);
+          console.log('Old: ', matchedSignal, ' >>> New: ', newSignal);
 
           if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc'].includes(newSignal.currency)) {
-            this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} ${matchedSignal.signal} >>> ${newSignal.signal} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
+            this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
           }
 
           //remove old data and add new data
-          this.sourceData.forEach((item: any) => {
-            if (item.currency === newSignal.currency) {
-              item.time = newSignal.time;
-              item.signal = newSignal.signal;
-              item.currency = newSignal.currency
-            }
-          })
-
           this.db.collection('currencies').doc(matchedSignal.currency)
             .set(matchedSignal, { merge: true });
         }
       } else {
         //add new data to db
-        this.sourceData.push(newSignal);
         this.db.collection("currencies").doc(newSignal.currency).set(newSignal);
-
         console.log('Signal initial: ', newSignal);
       }
 
