@@ -73,7 +73,7 @@ export class AppComponent implements OnInit {
         }
       }).catch(function (error) {
         //add new data to db
-        this.db.collection("currencies").doc(newSignal.currency).set(newSignal);
+        docRef.set(newSignal);
         console.log('Signal initial: ', newSignal);
       });
     })
