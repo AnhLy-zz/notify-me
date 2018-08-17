@@ -3,9 +3,14 @@ import { interval } from 'rxjs/observable/interval';
 import { HttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
 import * as $ from 'jquery';
+import { AngularFirestore } from 'angularfire2/firestore';
 
-const API_SIGNAL = `https://signal3.exacoin.co/ai_all_signal?time=15m`;
+const API_SIGNAL = `https://signal3.exacoin.co/ai_all_signal?time=5m`;
 const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
+
+class Currency {
+  constructor(public title) { }
+}
 
 @Component({
   selector: 'app-root',
@@ -17,30 +22,26 @@ export class AppComponent implements OnInit {
   newData = []
   emailContent = []
 
-  constructor(private http: HttpClient) {
-    console.log('nick always here');
+  constructor(private http: HttpClient, private db: AngularFirestore) {
+    console.log('>>> Currency goes here');
+
+    //get data currencies
+    db.collection('currencies').valueChanges()
+      .subscribe(res => this.sourceData = res)
   }
 
   ngOnInit() {
-    this.emailContent = [];
-    const numbers = interval(1000 * 60 * 2);
+    const numbers = interval(1000 * 5 * 60);
     numbers.subscribe(() => this.getData());
   }
 
   getData() {
-    if (_.isEmpty(this.sourceData)) {
-      //call api to get data from api
-      this.http.get(API_SIGNAL)
-        .subscribe((res: any) => {
-          this.sourceData = this.arrangData(res)
-        })
-    } else {
-      this.http.get(API_SIGNAL)
-        .subscribe((res: any) => {
-          this.newData = this.arrangData(res)
-        })
-      this.compareData();
-    }
+    this.http.get(API_SIGNAL)
+      .subscribe((res: any) => {
+        this.newData = this.arrangData(res)
+      })
+    this.compareData();
+
   }
 
   arrangData(data: any) {
@@ -59,32 +60,44 @@ export class AppComponent implements OnInit {
     _.forEach(this.newData, (newSignal: any) => {
       const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
       if (matchedSignal) {
-        if (newSignal.signal !== matchedSignal.signal) {
-          console.log('Old signal: ', matchedSignal);
-          console.log('New signal: ', newSignal);
-            if (newSignal.currency === 'btcusdt' || newSignal.currency === 'ethbtc') {
-          this.emailContent.push(`Old signal: ${JSON.stringify(matchedSignal)}. New signal: ${JSON.stringify(newSignal)}`);
+        if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
+          console.log('Old >>> : ', matchedSignal);
+          console.log('New >>> : ', newSignal);
+
+          if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc'].includes(newSignal.currency)) {
+            this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} ${matchedSignal.signal} >>> ${newSignal.signal} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
+          }
+
+          //remove old data and add new data
+          this.sourceData.forEach((item: any) => {
+            if (item.currency === newSignal.currency) {
+              item.time = newSignal.time;
+              item.signal = newSignal.signal;
+              item.currency = newSignal.currency
             }
-            _.remove(this.sourceData, function(item) {
-              return item.currency === newSignal.currency ;
-            });
-            this.sourceData.push(newSignal);
+          })
+
+          this.db.collection('currencies').doc(matchedSignal.currency)
+            .set(matchedSignal, { merge: true });
         }
       } else {
+        //add new data to db
         this.sourceData.push(newSignal);
-        console.log('New signal initial: ', newSignal);
-        //this.emailContent.push('New signal initial: ', JSON.stringify(newSignal));
+        this.db.collection("currencies").doc(newSignal.currency).set(newSignal);
+
+        console.log('Signal initial: ', newSignal);
       }
+
     })
 
-   // this.sendEmail();
+    this.sendEmail();
   }
 
   sendEmail() {
     const data = {
       service_id: 'gmail',
-      template_id: 'template_RLzpQCde',
-      user_id: 'user_RZxp7PcNtvPxnBMph4LaY',
+      template_id: 'template_us4DgScN',
+      user_id: 'user_gotw1qWCLxdAf2jkKBZGl',
       template_params: {
         'email_content': JSON.stringify(this.emailContent),
       }
