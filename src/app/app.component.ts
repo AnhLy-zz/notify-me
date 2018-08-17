@@ -55,12 +55,14 @@ export class AppComponent implements OnInit {
     //    else old then compare with the exist value
     _.forEach(this.newData, (newSignal: any) => {
       let matchedSignal;
-      this.db.collection('currencies').doc(newSignal.currency).get()
+      this.db.collection('currencies').doc(newSignal.currency).ref.get()
           .then(function(doc) {
             if (doc.exists) {
               matchedSignal = doc.data();
             }
           });
+        
+        
             
       if (matchedSignal) {
         if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
