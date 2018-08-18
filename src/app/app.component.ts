@@ -28,12 +28,18 @@ export class AppComponent implements OnInit {
   }
 
   getData() {
-    this.http.get(API_SIGNAL)
-      .subscribe((res: any) => {
-        this.newData = this.arrangData(res)
-      })
-    this.compareData();
-
+    this.sourceData = []
+    this.db.collection('currencies').valueChanges()
+      .subscribe(currencies => {
+        this.sourceData = currencies;
+        
+        // get new AI signal
+        this.http.get(API_SIGNAL)
+        .subscribe((signal: any) => {
+          this.newData = this.arrangData(signal);
+          this.compareData();
+        });
+      });
   }
 
   arrangData(data: any) {
@@ -49,33 +55,31 @@ export class AppComponent implements OnInit {
     //  then compare is new or old?
     //    if new then push in source data
     //    else old then compare with the exist value
-    
+
     _.forEach(this.newData, (newSignal: any) => {
-      let matchedSignal;
+      const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
       const docRef = this.db.collection("currencies").doc(newSignal.currency);
 
-      docRef.ref.get().then(function (doc) {
-        if (doc.exists) {
-          matchedSignal = doc.data();
-          if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
-            console.log('Old: ', matchedSignal);
-            console.log('New: ', newSignal);
-  
-            if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc', 'bnbbtc', 'eosbtc', 'wtcbtc'].includes(newSignal.currency)) {
-              this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
-              console.log(' >>> Important ',_.toUpper(newSignal.currency),' <<<');
-            }
-            console.log('-------------------------------------------------');
-  
-            //update data
-            docRef.set(newSignal, { merge: true });
+      if (matchedSignal) {
+        if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
+          console.log('Old: ', matchedSignal);
+          console.log('New: ', newSignal);
+
+          if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc', 'bnbbtc', 'eosbtc', 'wtcbtc'].includes(newSignal.currency)) {
+            this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
+            this.emailContent.push('-------------------------------------------------');
+            console.log(' >>> Important ', _.toUpper(newSignal.currency), ' <<<');
           }
+          console.log('-------------------------------------------------');
+
+          //update data
+          docRef.set(newSignal, { merge: true });
         }
-      }).catch(function (error) {
+      } else {
         //add new data to db
         docRef.set(newSignal);
         console.log('Signal initial: ', newSignal);
-      });
+      }
     })
 
     this.sendEmail();
