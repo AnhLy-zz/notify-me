@@ -32,13 +32,12 @@ export class AppComponent implements OnInit {
     this.db.collection('currencies').valueChanges()
       .subscribe(currencies => {
         this.sourceData = currencies;
-        
         // get new AI signal
         this.http.get(API_SIGNAL)
-        .subscribe((signal: any) => {
-          this.newData = this.arrangData(signal);
-          this.compareData();
-        });
+          .subscribe((signal: any) => {
+            this.newData = this.arrangData(signal);
+            this.compareData();
+          });
       });
   }
 
@@ -58,7 +57,7 @@ export class AppComponent implements OnInit {
 
     _.forEach(this.newData, (newSignal: any) => {
       const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
-      const docRef = this.db.collection("currencies").doc(newSignal.currency);
+      // const docRef = this.db.collection("currencies").doc(newSignal.currency);
 
       if (matchedSignal) {
         if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
@@ -67,17 +66,19 @@ export class AppComponent implements OnInit {
 
           if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc', 'bnbbtc', 'eosbtc', 'wtcbtc'].includes(newSignal.currency)) {
             this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
-            this.emailContent.push('-------------------------------------------------');
             console.log(' >>> Important ', _.toUpper(newSignal.currency), ' <<<');
           }
           console.log('-------------------------------------------------');
 
           //update data
-          docRef.set(newSignal, { merge: true });
+          this.db.collection('currencies').doc(matchedSignal.currency)
+            .set(matchedSignal, { merge: true });
         }
       } else {
         //add new data to db
-        docRef.set(newSignal);
+        this.db.collection('currencies')
+          .doc(newSignal.currency)
+          .set(newSignal);
         console.log('Signal initial: ', newSignal);
       }
     })
