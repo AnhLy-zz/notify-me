@@ -70,12 +70,10 @@ export class AppComponent implements OnInit {
           }
           console.log('-------------------------------------------------');
 
-          //update data
+          // //update data
           this.db.collection('currencies')
             .doc(matchedSignal.currency)
-            .set(matchedSignal, 
-              { merge: true }
-            );
+            .update(newSignal);
         }
       }
     })
