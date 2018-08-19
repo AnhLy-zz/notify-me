@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   sourceData = []
   newData = []
   emailContent = []
+  needInfo = ['btcusdt', 'ethbtc', 'ethusdt'];
 
   constructor(private http: HttpClient, private db: AngularFirestore) {
     console.log('>>> Currency goes here >>>');
@@ -57,29 +58,25 @@ export class AppComponent implements OnInit {
 
     _.forEach(this.newData, (newSignal: any) => {
       const matchedSignal = _.find(this.sourceData, { 'currency': newSignal.currency });
-      // const docRef = this.db.collection("currencies").doc(newSignal.currency);
 
       if (matchedSignal) {
         if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
           console.log('Old: ', matchedSignal);
           console.log('New: ', newSignal);
 
-          if (['btcusdt', 'ethbtc', 'ethusdt', 'trxbtc', 'adabtc', 'xrpbtc', 'bnbbtc', 'eosbtc', 'wtcbtc'].includes(newSignal.currency)) {
+          if (this.needInfo.includes(newSignal.currency)) {
             this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
             console.log(' >>> Important ', _.toUpper(newSignal.currency), ' <<<');
           }
           console.log('-------------------------------------------------');
 
           //update data
-          this.db.collection('currencies').doc(matchedSignal.currency)
-            .set(matchedSignal, { merge: true });
+          this.db.collection('currencies')
+            .doc(matchedSignal.currency)
+            .set(matchedSignal, 
+              { merge: true }
+            );
         }
-      } else {
-        //add new data to db
-        this.db.collection('currencies')
-          .doc(newSignal.currency)
-          .set(newSignal);
-        console.log('Signal initial: ', newSignal);
       }
     })
 
