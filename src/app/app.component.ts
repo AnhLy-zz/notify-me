@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    const numbers = interval(1000 * 5 * 60);
+    const numbers = interval(1000 * 2);
     numbers.subscribe(() => this.getData());
   }
 
@@ -34,6 +34,7 @@ export class AppComponent implements OnInit {
       .subscribe(currencies => {
         this.sourceData = currencies;
         // get new AI signal
+
         this.http.get(API_SIGNAL)
           .subscribe((signal: any) => {
             this.newData = this.arrangData(signal);
@@ -61,24 +62,30 @@ export class AppComponent implements OnInit {
 
       if (matchedSignal) {
         if (newSignal.signal !== matchedSignal.signal && Number(matchedSignal.time) <= Number(newSignal.time)) {
-          console.log('Old: ', matchedSignal);
-          console.log('New: ', newSignal);
-
-          if (this.needInfo.includes(newSignal.currency)) {
-            this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
-            console.log(' >>> Important ', _.toUpper(newSignal.currency), ' <<<');
-          }
-          console.log('-------------------------------------------------');
-
           // //update data
-          this.db.collection('currencies')
-            .doc(matchedSignal.currency)
-            .update(newSignal);
+          this.db.firestore.collection('currencies')
+            .doc(newSignal.currency)
+            .set(newSignal, { merge: true })
+            .then(() => {
+              console.log('Old: ', matchedSignal);
+              console.log('New: ', newSignal);
+
+              if (this.needInfo.includes(newSignal.currency)) {
+                this.emailContent.push(`Currency: ${_.toUpper(matchedSignal.currency)} from ${_.toUpper(matchedSignal.signal)} to ${_.toUpper(newSignal.signal)} Old price: ${matchedSignal.price} >>> New price: ${newSignal.price}`);
+                console.log(' >>> Important ', _.toUpper(newSignal.currency), ' <<<');
+              }
+              this.emailContent.push('newSignal', newSignal);
+              console.log('-------------------------------------------------');
+
+              this.sendEmail();
+              this.emailContent = [];
+            })
+            .catch(err => console.log('update error', err));
         }
       }
-    })
+    });
 
-    this.sendEmail();
+
   }
 
   sendEmail() {
@@ -97,7 +104,6 @@ export class AppComponent implements OnInit {
         contentType: 'application/json'
       }).done(function () {
         console.log('Your mail is sent!');
-        this.emailContent = [];
       }).fail(function (error) {
         console.log('Oops... ' + JSON.stringify(error));
       });
