@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    const numbers = interval(1000 * 2);
+    const numbers = interval(1000 * 5 * 60);
     numbers.subscribe(() => this.getData());
   }
 
@@ -91,8 +91,8 @@ export class AppComponent implements OnInit {
   sendEmail() {
     const data = {
       service_id: 'gmail',
-      template_id: 'template_us4DgScN',
-      user_id: 'user_gotw1qWCLxdAf2jkKBZGl',
+      template_id: 'template_rHfjlVrv',
+      user_id: 'user_J6Z48YYzZ0LEq3yHqDwcu',
       template_params: {
         'email_content': JSON.stringify(this.emailContent),
       }
