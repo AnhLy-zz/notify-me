@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { AngularFirestore } from 'angularfire2/firestore';
 
-const API_SIGNAL = `https://signal3.exacoin.co/ai_all_signal?time=10m`;
+const API_SIGNAL = `https://signal3.exacoin.co/ai_all_signal?time=15m`;
 const API_EMAil = `https://api.emailjs.com/api/v1.0/email/send`;
 
 @Component({
@@ -17,14 +17,14 @@ export class AppComponent implements OnInit {
   sourceData = []
   newData = []
   emailContent = []
-  needInfo = ['btcusdt', 'ethbtc', 'ethusdt'];
+  needInfo = ['btcusdt'];
 
   constructor(private http: HttpClient, private db: AngularFirestore) {
     console.log('>>> Currency goes here >>>');
   }
 
   ngOnInit() {
-    const numbers = interval(1000 * 10 * 60);
+    const numbers = interval(1000 * 15 * 60);
     numbers.subscribe(() => this.getData());
   }
 
